@@ -31,10 +31,6 @@ function Get-Stat {
         foreach ($Item in $Items) {
             try {
                 $FileInfo = New-Object System.IO.FileInfo($Item.FullName)
-                
-                $CreationUtc   = $FileInfo.CreationTimeUtc
-                $LastWriteUtc  = $FileInfo.LastWriteTimeUtc
-                $LastAccessUtc = $FileInfo.LastAccessTimeUtc
 
                 [PSCustomObject]@{
                     Name             = $Item.Name
@@ -43,15 +39,15 @@ function Get-Stat {
                     Attributes       = $Item.Attributes
                     AccessMode       = $FileInfo.Attributes
                     
-                    # .fffffff geeft exact de maximale 100ns precisie weer die NTFS ondersteunt
-                    CreationTime     = $CreationUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff")
-                    CreationTicks    = $CreationUtc.Ticks
+                    # Normale weergave (DateTime objecten)
+                    CreationTime     = $FileInfo.CreationTime
+                    LastWriteTime    = $FileInfo.LastWriteTime
+                    LastAccessTime   = $FileInfo.LastAccessTime
                     
-                    LastWriteTime    = $LastWriteUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff")
-                    LastWriteTicks   = $LastWriteUtc.Ticks
-                    
-                    LastAccessTime   = $LastAccessUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff")
-                    LastAccessTicks  = $LastAccessUtc.Ticks
+                    # Absolute 100ns precisie via Ticks
+                    CreationTicks    = $FileInfo.CreationTimeUtc.Ticks
+                    LastWriteTicks   = $FileInfo.LastWriteTimeUtc.Ticks
+                    LastAccessTicks  = $FileInfo.LastAccessTimeUtc.Ticks
                 }
             } catch {
                 Write-Error "Fout bij lezen van statistieken voor $($Item.FullName): $_"
