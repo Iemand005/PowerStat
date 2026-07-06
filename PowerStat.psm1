@@ -9,7 +9,6 @@ function Get-Stat {
     )
 
     process {
-        # Los het pad op naar een absoluut bestandssysteem-pad
         $ResolvedPath = Resolve-Path -Path $Path -ErrorAction SilentlyContinue
         if (-not $ResolvedPath) {
             Write-Error "Pad niet gevonden: $Path"
@@ -17,7 +16,6 @@ function Get-Stat {
         }
         $LiteralPath = $ResolvedPath.Path
 
-        # Verzamel alle doelen (bestand/map zelf, en eventueel subbestanden)
         $Items = @()
         if (Test-Path -Path $LiteralPath -PathType Container) {
             $Items += Get-Item -LiteralPath $LiteralPath
@@ -30,12 +28,14 @@ function Get-Stat {
             $Items += Get-Item -LiteralPath $LiteralPath
         }
 
-        # Verwerk elk item en haal de 100ns precisie (Ticks) op
         foreach ($Item in $Items) {
             try {
                 $FileInfo = New-Object System.IO.FileInfo($Item.FullName)
                 
-                # Windows Ticks representeren exact 100-nanoseconde intervallen
+                $CreationUtc   = $FileInfo.CreationTimeUtc
+                $LastWriteUtc  = $FileInfo.LastWriteTimeUtc
+                $LastAccessUtc = $FileInfo.LastAccessTimeUtc
+
                 [PSCustomObject]@{
                     Name             = $Item.Name
                     FullName         = $Item.FullName
@@ -43,15 +43,15 @@ function Get-Stat {
                     Attributes       = $Item.Attributes
                     AccessMode       = $FileInfo.Attributes
                     
-                    # Tijdstempels met volledige precisie via .NET Ticks
-                    CreationTime     = $FileInfo.CreationTimeUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffffff")
-                    CreationTicks    = $FileInfo.CreationTimeUtc.Ticks
+                    # .fffffff geeft exact de maximale 100ns precisie weer die NTFS ondersteunt
+                    CreationTime     = $CreationUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff")
+                    CreationTicks    = $CreationUtc.Ticks
                     
-                    LastWriteTime    = $FileInfo.LastWriteTimeUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffffff")
-                    LastWriteTicks   = $FileInfo.LastWriteTicks = $FileInfo.LastWriteTimeUtc.Ticks
+                    LastWriteTime    = $LastWriteUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff")
+                    LastWriteTicks   = $LastWriteUtc.Ticks
                     
-                    LastAccessTime   = $FileInfo.LastAccessTimeUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffffff")
-                    LastAccessTicks  = $FileInfo.LastAccessTimeUtc.Ticks
+                    LastAccessTime   = $LastAccessUtc.ToString("yyyy-MM-dd HH:mm:ss.fffffff")
+                    LastAccessTicks  = $LastAccessUtc.Ticks
                 }
             } catch {
                 Write-Error "Fout bij lezen van statistieken voor $($Item.FullName): $_"
