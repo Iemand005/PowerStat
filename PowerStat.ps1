@@ -6,6 +6,6 @@
     Copyright         = '(c) 2026 Alle rechten voorbehouden.'
     Description       = 'Biedt een Linux-achtige stat-functionaliteit met 100ns precisie.'
     PowerShellVersion = '5.1'
-    RootModule        = 'WinStat.psm1'
+    RootModule        = 'PowerStat.psm1'
     CmdletsToExport   = @('Get-Stat')
 }
