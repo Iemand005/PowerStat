@@ -54,4 +54,34 @@ function Get-Stat {
 	}
 }
 
-Export-ModuleMember -Function Get-Stat
+function Export-Stat {
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[string]$LiteralPath,
+
+		[Parameter(ValueFromPipeline = $true)]
+		$InputObject
+	)
+
+	begin {
+		$Script:ExportItems = @()
+	}
+
+	process {
+		if ($InputObject) {
+			$Script:ExportItems += $InputObject
+			Write-Output $InputObject
+		}
+	}
+
+	end {
+		if ($Script:ExportItems.Count -gt 0) {
+			$Script:ExportItems | Export-Csv -LiteralPath $LiteralPath -NoTypeInformation -Delimiter "," -Encoding UTF8
+		}
+	}
+}
+
+Set-Alias -Name stat -Value Get-Stat
+
+Export-ModuleMember -Function Get-Stat, Export-Stat -Alias stat
